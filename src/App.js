@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { electron } from "./constants/electron";
+import { electron } from "./electron/nativeActions";
 
 export class App extends Component {
   state = {
