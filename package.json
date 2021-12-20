@@ -9,7 +9,7 @@
   "build": {
     "appId": "com.electron.linkapp",
     "win": {
-      "icon": "build/icon.ico"
+      "icon": "build/installerIcon.ico"
     },
     "productName": "Links App",
     "nsis": {

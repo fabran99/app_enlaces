@@ -18,8 +18,9 @@ const LINK_DATA = [
 const Navigation = (props) => {
   const { pathname } = props.history.location;
 
-  const handleClick = (e) => {
-    electron.ipcRenderer.send(e.target.name);
+  const handleClick = (event) => {
+    console.log(event);
+    electron.ipcRenderer.send(event);
   };
   return (
     <nav>
@@ -41,7 +42,7 @@ const Navigation = (props) => {
       <div className="nav-buttons">
         <div
           className="nav-button"
-          onClick={handleClick}
+          onClick={handleClick.bind(this, "MINIMIZE_WINDOW")}
           name="MINIMIZE_WINDOW"
         >
           <i className="fa fa-window-minimize"></i>
@@ -49,7 +50,11 @@ const Navigation = (props) => {
         <Link to="/settings" className="nav-button">
           <i className="fa fa-cog"></i>
         </Link>
-        <div className="nav-button" onClick={handleClick} name="CLOSE_WINDOW">
+        <div
+          className="nav-button"
+          onClick={handleClick.bind(this, "CLOSE_WINDOW")}
+          name="CLOSE_WINDOW"
+        >
           <i className="fas fa-times"></i>
         </div>
       </div>
