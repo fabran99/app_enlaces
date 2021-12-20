@@ -17,11 +17,6 @@ class SeleniumAutomation {
   // --------------------------------------------------
   // Constants
   // --------------------------------------------------
-  ACTIONS = {
-    GET_DOWNLOAD_LINKS: this.get_download_links,
-    UPLOAD_LINKS: this.get_download_links,
-    GET_DOWNLOAD_LINKS_TEST:this.get_download_links_movies
-  };
 
   ZS_BUTTON_CSS_PATH =
     "#DwsldCn > div > table > tbody > tr:nth-child(2) > td:nth-child(4) > a";
@@ -30,31 +25,27 @@ class SeleniumAutomation {
   //   Initialize
   // --------------------------------------------------
 
-  constructor(action, data) {
-    this.action = action;
-    this.data = data;
+  constructor() {
     this.driver = null;
   }
 
-  initialize(allow_headless=false) {
+  initialize(allow_headless = false) {
     if (this.driver) {
       return null;
     }
-    if(allow_headless){
+    if (allow_headless) {
       this.driver = new webdriver.Builder()
-      .setChromeOptions(new chrome.Options().headless())
-     .setChromeService(serviceBuilder)
-     .forBrowser("chrome")
-     .build();
-    }
-    else{
+        .setChromeOptions(new chrome.Options().headless())
+        .setChromeService(serviceBuilder)
+        .forBrowser("chrome")
+        .build();
+    } else {
       this.driver = new webdriver.Builder()
-      // .setChromeOptions(new chrome.Options().headless())
-     .setChromeService(serviceBuilder)
-     .forBrowser("chrome")
-     .build();
+        // .setChromeOptions(new chrome.Options().headless())
+        .setChromeService(serviceBuilder)
+        .forBrowser("chrome")
+        .build();
     }
-    
   }
 
   // --------------------------------------------------
@@ -100,7 +91,6 @@ class SeleniumAutomation {
     }
     // reverse the order of episode_data
     episode_data.reverse();
-    console.log(episode_data);
     let all_links = [];
     for (let i = 0; i < episode_data.length; i++) {
       let current_link = episode_data[i].link;
@@ -114,15 +104,19 @@ class SeleniumAutomation {
         zs_link,
       });
     }
-    return all_links; 
+    return all_links;
   }
 
   // --------------------------------------------------
   // Actions
   // --------------------------------------------------
-  async get_download_links() {
-    let linkList = this.data;
-    let animeflv_link= linkList.find((e)=>e.includes(ANIMEFLV_DOMAIN))
+  async get_download_links(
+    linkList,
+    onLinkCompleted,
+    onLinkFailed,
+    onLinkStart
+  ) {
+    let animeflv_link = linkList.find((e) => e.includes(ANIMEFLV_DOMAIN));
 
     this.initialize(!animeflv_link);
     var links = [];
@@ -130,51 +124,68 @@ class SeleniumAutomation {
     for (let i = 0; i < linkList.length; i++) {
       let link = linkList[i];
       // check if the link is from animeflv
-      if (link.includes(ANIMEFLV_DOMAIN)) {
-        console.log(`${link} is an animeflv link`);
-        let episode_links = await this.get_episode_links_from_animeflv(link);
-        links.push({
-          link,
-          episode_links,
-        });
-        
+      if (onLinkStart) {
+        onLinkStart(link);
       }
-      else if (link.includes(PELICULAMEGADRIVE_DOMAIN)){
-        let movie_link=await this.get_pelicula_mega_drive_links(link);
-        links.push({
-          link,movie_link
-        })
+      if (link.includes(ANIMEFLV_DOMAIN)) {
+        try {
+          let episode_links = await this.get_episode_links_from_animeflv(link);
+          let link_data = {
+            link,
+            episode_links,
+          };
+          links.push(link_data);
+          if (onLinkCompleted) {
+            onLinkCompleted(link);
+          }
+        } catch {
+          if (onLinkFailed) {
+            onLinkFailed(link);
+          }
+        }
+      } else if (link.includes(PELICULAMEGADRIVE_DOMAIN)) {
+        try {
+          let movie_link = await this.get_pelicula_mega_drive_links(link);
+          let link_data = {
+            link,
+            movie_link,
+          };
+          links.push(link_data);
+          if (onLinkCompleted) {
+            onLinkCompleted(link);
+          }
+        } catch {
+          if (onLinkFailed) {
+            onLinkFailed(link);
+          }
+        }
       }
     }
-    await this.driver.quit() 
+    await this.driver.quit();
     return links;
   }
-
-
-
 
   // --------------------------------------------------
   //   MOVIE PELICULA MEGA DRIVE MOVIE
   // --------------------------------------------------
-  async get_pelicula_mega_drive_links(link){
-    await this.driver.get(link)
-    let zs_button= await this.driver.findElement(
-      webdriver.By.xpath('/html/body/div[3]/div/div[1]/div[1]/div[1]/div/div[3]/div/div/fieldset/p/a')
-    );
-    let link_list=await zs_button.getAttribute('href')
-    await this.driver.get(link_list)
-    let list_of_links= await this.driver.findElement(webdriver.By.id('tab1'))
-    let zs_link= [];
-    let list_of_a= await list_of_links.findElements(webdriver.By.css('a')) 
-    
-    for(let i=0; list_of_a.length>i; i++ ){
-      let current_link=await list_of_a[i].getAttribute('href')
-      if(current_link.includes('zippyshare.com')){
-        zs_link.push(current_link)
+  async get_pelicula_mega_drive_links(link) {
+    await this.driver.get(link);
+    let download_div = await this.driver.findElement(webdriver.By.id("mmedia"));
+    let zs_link = await download_div.findElement(webdriver.By.css(".ext-link"));
+    //*[@id="mmedia"]/div/fieldset[2]/div[2]/a
+    let link_list = await zs_link.getAttribute("href");
+    await this.driver.get(link_list);
+    let list_of_links = await this.driver.findElement(webdriver.By.id("tab1"));
+    let zs_links = [];
+    let list_of_a = await list_of_links.findElements(webdriver.By.css("a"));
+
+    for (let i = 0; list_of_a.length > i; i++) {
+      let current_link = await list_of_a[i].getAttribute("href");
+      if (current_link.includes("zippyshare.com")) {
+        zs_links.push(current_link);
       }
     }
-    return zs_link
-    
+    return zs_links;
   }
 
   // async get_episode_links_from_peliculasmegadrive(link) {
@@ -185,7 +196,7 @@ class SeleniumAutomation {
   //   let movie = await this.driver.findElement(
   //     webdriver.By.id("marco-post")
   //   );
-      
+
   //   let movie_link = await movie.findElement(webdriver.By.xpath('/html/body/div[3]/div/div[1]/h2/a'));
   //     let movie_name= await movie.findElement(webdriver.By.css('a'))
   //     let name_data = await movie_name.getText();
@@ -193,26 +204,22 @@ class SeleniumAutomation {
   //     let movie_data={
   //       nombre:name_data,
   //       link: link_data
-        
 
   //     }
   //     console.log(movie_data)
 
-   
-      
   //   }
   //   async get_download_links_movies() {
   //     let linkList = this.data;
   //     this.initialize();
-      
-  
+
   //     for (let i = 0; i < linkList.length; i++) {
   //       let link = linkList[i];
   //       // check if the link is from animeflv
   //       if (link.includes(PELICULAMEGADRIVE_DOMAIN)) {
   //         console.log(`${link} is a movie link`);
   //         let movie_name = await this.get_episode_links_from_peliculasmegadrive(link);
-          
+
   //       }
   //     }
 
@@ -226,9 +233,9 @@ class SeleniumAutomation {
   //     );
   //     // // get the href attribute of the button
   //     let zs_link = await zs_buttons[1].getAttribute("href");
-  
+
   //     return zs_link;
-  //   } 
+  //   }
 }
 
 // var a = new SeleniumAutomation("GET_DOWNLOADS_LINKS", [
@@ -241,4 +248,4 @@ class SeleniumAutomation {
 // ]);
 // a.get_download_links_movies();
 
-module.exports = { SeleniumAutomation }; 
+module.exports = { SeleniumAutomation };
