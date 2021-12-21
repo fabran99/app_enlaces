@@ -1,59 +1,52 @@
 import React, { Component } from "react";
-import { electron } from "./electron/nativeActions";
+import { Provider } from "react-redux";
+import storeObject from "./redux/store";
+import { PersistGate } from "redux-persist/integration/react";
 
-export class App extends Component {
-  state = {
-    pages_list: "",
-    download_link_list: "",
-    searching_links: false,
-  };
+// React router
+import { HashRouter as Router, Route, Switch } from "react-router-dom";
 
-  onClick = () => {
-    let pages_list = this.state.pages_list;
-    if (this.state.searching_links) {
-      return null;
-    }
-    // get all links from the string using a regex
+// Toastify
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-    let pages_list_array = pages_list.split("\n");
-    this.setState({
-      searching_links: true,
-    });
+// Pages
+import LinkListGenerator from "./pages/linkListGenerator/linkListGenerator.component";
+// Components
+import Navigation from "./components/navigation/navigation.component";
+import AppWrapper from "./wrappers/appWrapper.component";
 
-    electron.ipcRenderer
-      .invoke("GET_DOWNLOAD_LINKS", pages_list_array)
-      .then((result) => {
-        this.setState({
-          download_link_list: result,
-          searching_links: false,
-        });
-      });
-  };
+// Sass
+import "./sass/bootstrap-grid.min.css";
+import "./sass/main.scss";
+const App = () => {
+  return (
+    <Provider store={storeObject.store}>
+      <Router>
+        <PersistGate persistor={storeObject.persistor}>
+          <div className="App">
+            <ToastContainer />
+            {/* Navigation */}
+            <Navigation />
+            <AppWrapper>
+              <div className="app_container">
+                <Switch>
+                  {/* linkListGenerator page */}
+                  <Route
+                    exact
+                    path="/"
+                    render={(props) => <LinkListGenerator {...props} />}
+                  />
 
-  onChange = (e) => {
-    this.setState({
-      [e.target.id]: e.target.value,
-    });
-  };
-
-  render() {
-    return (
-      <div>
-        <h1>Hello Electron</h1>
-        <textarea
-          id="pages_list"
-          value={this.state.pages_list}
-          onChange={this.onChange}
-          placeholder="Lista de links de animes"
-        ></textarea>
-        <textarea
-          id="download_link_list"
-          value={this.state.download_link_list}
-        ></textarea>
-        <button onClick={this.onClick}>Click</button>
-      </div>
-    );
-  }
-}
+                  {/* UploadPage */}
+                </Switch>
+              </div>
+            </AppWrapper>
+          </div>
+        </PersistGate>
+      </Router>
+    </Provider>
+  );
+};
 
 export default App;
