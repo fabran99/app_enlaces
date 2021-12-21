@@ -135,7 +135,7 @@ ipc.on("GET_DOWNLOAD_LINKS", (event, data) => {
         sendLinkListGeneratorMessage("GENERATION_LINK_FAILED", failedLink);
       },
       (linkStarted) => {
-        sendLinkListGeneratorMessage("GENERATION_LINK_STARTED", linkStarted);
+        sendLinkListGeneratorMessage("GENERATION_LINK_START", linkStarted);
       }
     )
     .then((links) => {

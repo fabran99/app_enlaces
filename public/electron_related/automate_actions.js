@@ -41,7 +41,14 @@ class SeleniumAutomation {
         .build();
     } else {
       this.driver = new webdriver.Builder()
-        // .setChromeOptions(new chrome.Options().headless())
+        .setChromeOptions(
+          new chrome.Options()
+            .headless()
+            .windowSize({ width: 1280, height: 720 })
+            .addArguments(
+              "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+            )
+        )
         .setChromeService(serviceBuilder)
         .forBrowser("chrome")
         .build();
@@ -71,40 +78,131 @@ class SeleniumAutomation {
     let episode_list = await this.driver.findElement(
       webdriver.By.id("episodeList")
     );
+    // get the title of the anime
+    let anime_title = link;
+    try {
+      anime_title = await this.driver
+        .findElement(webdriver.By.css("h1.Title"))
+        .getText();
+    } catch (e) {
+      anime_title = link;
+    }
+
     // get all <a> and <p> elements inside the episode list
     let episode_links = await episode_list.findElements(webdriver.By.css("a"));
-    let episode_texts = await episode_list.findElements(webdriver.By.css("p"));
+    // take the first episode link if it doesn't end with "#", else take the second
+    let episode_link = await episode_links[0].getAttribute("href");
+    if (episode_link.includes("#")) {
+      episode_link = await episode_links[1].getAttribute("href");
+    }
 
-    var episode_data = [];
-    if (episode_texts.length != episode_links.length) {
-      // ignore first episode_link
-      episode_links.shift();
-    }
-    for (let index = 0; index < episode_links.length; index++) {
-      let episode_link = episode_links[index];
-      let current_link_text = await episode_texts[index].getText();
-      let current_link = await episode_link.getAttribute("href");
-      episode_data.push({
-        link: current_link,
-        episode: current_link_text,
-      });
-    }
-    // reverse the order of episode_data
-    episode_data.reverse();
-    let all_links = [];
-    for (let i = 0; i < episode_data.length; i++) {
-      let current_link = episode_data[i].link;
-      let current_episode = episode_data[i].episode;
-      let zs_link = await this.get_zippyshare_link_from_animeflv_episode(
-        current_link
+    // go to the episode link
+    var all_links = [];
+    // get zippyshare link of the first page
+    var zs_link = await this.get_zippyshare_link_from_animeflv_episode(
+      episode_link
+    );
+    // get the title of the episode
+    var episode_title = await this.driver
+      .findElement(webdriver.By.css("h1.Title"))
+      .getText();
+    all_links.push({
+      link: episode_link,
+      episode: episode_title,
+      zs_link,
+    });
+    // get the prev episode link that has the class "CapNvPv", if it does not exist, return all_links
+    var prev_episode_link = null;
+    try {
+      prev_episode_link = await this.driver.findElement(
+        webdriver.By.css(".CapNvPv")
       );
+      if (prev_episode_link) {
+        prev_episode_link = await prev_episode_link.getAttribute("href");
+      }
+    } catch (e) {
+      prev_episode_link = null;
+    }
+
+    while (prev_episode_link) {
+      // get zippyshare link of the page
+      zs_link = await this.get_zippyshare_link_from_animeflv_episode(
+        prev_episode_link
+      );
+      // get the title of the episode
+      episode_title = await this.driver
+        .findElement(webdriver.By.css("h1.Title"))
+        .getText();
       all_links.push({
-        link: current_episode.link,
-        episode: current_episode,
+        link: prev_episode_link,
+        episode: episode_title,
         zs_link,
       });
+      console.log(prev_episode_link);
+      // get the prev episode link that has the class "CapNvPv", if it does not exist, return all_links
+      try {
+        prev_episode_link = await this.driver.findElement(
+          webdriver.By.css(".CapNvPv")
+        );
+        if (prev_episode_link) {
+          prev_episode_link = await prev_episode_link.getAttribute("href");
+        }
+      } catch (e) {
+        prev_episode_link = null;
+      }
+      console.log(prev_episode_link);
     }
-    return all_links;
+    console.log(all_links);
+
+    all_links.reverse();
+    return {
+      all_links,
+      title: anime_title,
+    };
+
+    // let current_link = episode_data[i].link;
+    // let current_episode = episode_data[i].episode;
+    // let zs_link = await this.get_zippyshare_link_from_animeflv_episode(
+    //   current_link
+    // );
+    // all_links.push({
+    //   link: current_episode.link,
+    //   episode: current_episode,
+    //   zs_link,
+    // });
+
+    // let episode_texts = await episode_list.findElements(webdriver.By.css("p"));
+
+    // var episode_data = [];
+    // if (episode_texts.length != episode_links.length) {
+    //   // ignore first episode_link
+    //   episode_links.shift();
+    // }
+    // for (let index = 0; index < episode_links.length; index++) {
+    //   let episode_link = episode_links[index];
+    //   let current_link_text = await episode_texts[index].getText();
+    //   let current_link = await episode_link.getAttribute("href");
+    //   episode_data.push({
+    //     link: current_link,
+    //     episode: current_link_text,
+    //   });
+    // }
+    // // reverse the order of episode_data
+    // episode_data.reverse();
+    // let all_links = [];
+    // for (let i = 0; i < episode_data.length; i++) {
+    // let current_link = episode_data[i].link;
+    // let current_episode = episode_data[i].episode;
+    // let zs_link = await this.get_zippyshare_link_from_animeflv_episode(
+    //   current_link
+    // );
+    // all_links.push({
+    //   link: current_episode.link,
+    //   episode: current_episode,
+    //   zs_link,
+    // });
+    // }
+    // return all_links;
   }
 
   // --------------------------------------------------
@@ -116,9 +214,9 @@ class SeleniumAutomation {
     onLinkFailed,
     onLinkStart
   ) {
-    let animeflv_link = linkList.find((e) => e.includes(ANIMEFLV_DOMAIN));
+    // let animeflv_link = linkList.find((e) => e.includes(ANIMEFLV_DOMAIN));
 
-    this.initialize(!animeflv_link);
+    this.initialize();
     var links = [];
 
     for (let i = 0; i < linkList.length; i++) {
@@ -132,13 +230,15 @@ class SeleniumAutomation {
           let episode_links = await this.get_episode_links_from_animeflv(link);
           let link_data = {
             link,
-            episode_links,
+            episode_links: episode_links.all_links,
+            title: episode_links.title,
           };
           links.push(link_data);
           if (onLinkCompleted) {
             onLinkCompleted(link);
           }
-        } catch {
+        } catch (e) {
+          console.log(e);
           if (onLinkFailed) {
             onLinkFailed(link);
           }
@@ -148,7 +248,8 @@ class SeleniumAutomation {
           let movie_link = await this.get_pelicula_mega_drive_links(link);
           let link_data = {
             link,
-            movie_link,
+            movie_link: movie_link.zs_links,
+            title: movie_link.title,
           };
           links.push(link_data);
           if (onLinkCompleted) {
@@ -170,6 +271,19 @@ class SeleniumAutomation {
   // --------------------------------------------------
   async get_pelicula_mega_drive_links(link) {
     await this.driver.get(link);
+    // get the title of the movie
+    let title = link;
+    try {
+      title = await this.driver
+        .findElement(webdriver.By.css("h2.titulo a"))
+        .getText();
+      title = title.split("[")[0];
+      console.log(title);
+    } catch (e) {
+      console.log(e);
+      title = link;
+    }
+
     let download_div = await this.driver.findElement(webdriver.By.id("mmedia"));
     let zs_link = await download_div.findElement(webdriver.By.css(".ext-link"));
     //*[@id="mmedia"]/div/fieldset[2]/div[2]/a
@@ -185,7 +299,10 @@ class SeleniumAutomation {
         zs_links.push(current_link);
       }
     }
-    return zs_links;
+    return {
+      zs_links,
+      title,
+    };
   }
 
   // async get_episode_links_from_peliculasmegadrive(link) {

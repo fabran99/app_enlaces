@@ -1,6 +1,7 @@
 import { connect } from "react-redux";
 import React, { Component } from "react";
 import classnames from "classnames";
+import { toast } from "react-toastify";
 
 const ResultsList = (props) => {
   const { linkListGenerator } = props;
@@ -16,9 +17,31 @@ const ResultsList = (props) => {
         all_links = [...all_links, ...link.episode_links.map((e) => e.zs_link)];
       }
     });
-    console.log(all_links);
+    // Notify with a toast
+    toast.info("Todos los links copiados al portapapeles", {
+      closeOnClick: true,
+      autoClose: 4000,
+      position: "bottom-right",
+    });
 
     navigator.clipboard.writeText(all_links.join("\n"));
+  };
+
+  const onCopyElement = (index) => {
+    let links = [];
+    let link = generationCompletedData[index];
+    if (!!link.movie_link) {
+      links = link.movie_link;
+    } else {
+      links = link.episode_links.map((e) => e.zs_link);
+    }
+    // Notify with a toast
+    toast.info(`Links de: "${link.title}" copiados al portapapeles`, {
+      closeOnClick: true,
+      autoClose: 4000,
+      position: "bottom-right",
+    });
+    navigator.clipboard.writeText(links.join("\n"));
   };
 
   return (
@@ -27,11 +50,11 @@ const ResultsList = (props) => {
 
       {!generating && generationCompletedData && (
         <div className="results-list__results">
-          {generationCompletedData.map((result) => {
+          {generationCompletedData.map((result, i) => {
             let isMovie = !!result.movie_link;
             return (
               <div className="results-list__result" key={result.link}>
-                <p className="link">{result.link}</p>
+                <p className="link">{result.title}</p>
                 <div className="sublinks">
                   {isMovie
                     ? result.movie_link.map((movieLink, index) => {
@@ -45,15 +68,19 @@ const ResultsList = (props) => {
                         );
                       })
                     : result.episode_links.map((episodeLink, index) => {
-                        console.log(episodeLink);
                         return (
                           <p key={index}>
                             <a href={episodeLink.zs_link}>
-                              {episodeLink.zs_link}
+                              {episodeLink.episode} - {episodeLink.zs_link}
                             </a>
                           </p>
                         );
                       })}
+
+                  <button className="button" onClick={() => onCopyElement(i)}>
+                    <i className="fas fa-copy"></i>
+                    <span>Copiar enlaces</span>
+                  </button>
                 </div>
               </div>
             );

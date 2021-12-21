@@ -55,6 +55,7 @@
       overflow: auto;
       max-height: 160px;
       margin-bottom: 0.5em;
+      user-select: text;
     }
 
     &__result:not(:last-child) {
@@ -67,6 +68,9 @@
       margin-bottom: 0.5em;
     }
     .sublinks {
+      .button {
+        margin: 1em auto 0.5em auto;
+      }
       a {
         color: lighten($mainText, 5%);
         font-size: 0.9em;
