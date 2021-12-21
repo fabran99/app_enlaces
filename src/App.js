@@ -11,7 +11,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Pages
-import LinkListGenerator from "./components/linkListGenerator/linkListGenerator.component";
+import LinkListGenerator from "./pages/linkListGenerator/linkListGenerator.component";
 // Components
 import Navigation from "./components/navigation/navigation.component";
 import AppWrapper from "./wrappers/appWrapper.component";

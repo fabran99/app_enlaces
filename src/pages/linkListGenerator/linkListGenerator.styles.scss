@@ -8,7 +8,7 @@
   .link-list {
     textarea {
       width: 100%;
-      margin: 1em auto;
+      margin: 1em auto 0.5em auto;
       display: block;
       padding: 0.5em;
       font-family: Poppins;
@@ -22,6 +22,9 @@
     small {
       color: $mainText;
       font-size: 0.7em;
+    }
+
+    .button--red {
       margin-left: 1em;
     }
   }

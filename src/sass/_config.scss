@@ -11,6 +11,7 @@ $navbarHeight: 35px;
   border-radius: 2px;
   color: $lighterText;
   font-size: 0.7em;
+  user-select: none;
   cursor: pointer;
   padding-top: 0.2em;
   svg {
@@ -25,5 +26,12 @@ $navbarHeight: 35px;
     background: lighten($middleDark, 15%);
     // put normal cursor
     cursor: default;
+  }
+
+  &--red {
+    background: $mainRed;
+    &:hover {
+      background: darken($mainRed, 3%);
+    }
   }
 }

@@ -61,6 +61,10 @@ const LinkListGenerator = (props) => {
     electron.ipcRenderer.send("GET_DOWNLOAD_LINKS", validLinks);
   };
 
+  const onOpenMipony = () => {
+    electron.ipcRenderer.send("EXECUTE_MIPONY");
+  };
+
   return (
     <div className="link-list-generator">
       <div className="link-list">
@@ -72,6 +76,7 @@ const LinkListGenerator = (props) => {
               onChange={onChange}
               placeholder="Escribe aquí tu lista de links"
             ></textarea>
+            <small>Compatible con AnimeFLV y PeliculasMegaDrive</small>
           </div>
           <div className="col-6">
             <div className="valid-link-list">
@@ -110,7 +115,10 @@ const LinkListGenerator = (props) => {
                   <i className="fas fa-search"></i>
                   <span>Buscar</span>
                 </button>
-                <small>Compatible con AnimeFLV y PeliculasMegaDrive</small>
+                <button className="button button--red" onClick={onOpenMipony}>
+                  <i className="fas fa-download"></i>
+                  <span>Abrir MiPony</span>
+                </button>
               </div>
             </div>
           </div>

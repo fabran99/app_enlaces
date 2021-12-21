@@ -10,6 +10,10 @@ const { autoUpdater } = require("electron-updater");
 const {
   SeleniumAutomation,
 } = require("./electron_related/automate_actions.js");
+const {
+  runMyPony,
+  runMiPony,
+} = require("./electron_related/run_external_program.js");
 
 let mainWindow;
 let loadingScreen;
@@ -152,6 +156,9 @@ ipc.on("MINIMIZE_WINDOW", (event, arg) => {
 });
 ipc.on("CLOSE_WINDOW", (event, arg) => {
   mainWindow.close();
+});
+ipc.on("EXECUTE_MIPONY", (event, arg) => {
+  runMiPony();
 });
 
 // =================================
