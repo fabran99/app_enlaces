@@ -1,15 +1,19 @@
 const electron = require("electron");
 const ipc = electron.ipcMain;
-const app = electron.app;
+const { app, session } = electron;
 const BrowserWindow = electron.BrowserWindow;
 const path = require("path");
 const join = path.join;
 const isDev = require("electron-is-dev");
 const { lstatSync, readdirSync } = require("fs");
-// const { autoUpdater } = require("electron-updater");
+const { autoUpdater } = require("electron-updater");
 const {
   SeleniumAutomation,
 } = require("./electron_related/automate_actions.js");
+const {
+  runMyPony,
+  runMiPony,
+} = require("./electron_related/run_external_program.js");
 
 let mainWindow;
 let loadingScreen;
@@ -32,8 +36,8 @@ if (!gotTheLock) {
 // Ventana principal
 const createWindow = () => {
   mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 640,
+    width: 800,
+    height: 500,
     icon: "",
     webPreferences: {
       nodeIntegration: true,
@@ -41,12 +45,12 @@ const createWindow = () => {
       contextIsolation: false,
       enableRemoteModule: true,
     },
-    // frame: false,
+    frame: false,
     resizable: false,
     // show: false,
   });
 
-  //   mainWindow.setMenuBarVisibility(false);
+  mainWindow.setMenuBarVisibility(false);
 
   // Inicio react
   mainWindow.loadURL(
@@ -56,6 +60,7 @@ const createWindow = () => {
   );
 
   // Abro herramientas de desarrollo
+  console.log(isDev);
   if (isDev) {
     mainWindow.webContents.openDevTools();
     // Agrego extensiones
@@ -77,10 +82,10 @@ const createWindow = () => {
 // Se ejecuta cuando inicia la app
 app.on("ready", () => {
   createWindow();
-  // autoUpdater.checkForUpdates();
-  // setInterval(() => {
-  //   autoUpdater.checkForUpdates();
-  // }, 1000 * 60 * 15);
+  autoUpdater.checkForUpdates();
+  setInterval(() => {
+    autoUpdater.checkForUpdates();
+  }, 1000 * 60 * 15);
 });
 
 app.on("window-all-closed", () => {
@@ -95,26 +100,70 @@ app.on("activate", () => {
   }
 });
 
-//   // Auto update
-// // when the update is ready, notify the BrowserWindow
-// autoUpdater.on("update-downloaded", (info) => {
-//     console.log("downloaded", info);
-//     mainWindow.webContents.send("updateReady", info);
-//   });
-
-//   ipc.on("quitAndInstall", (event, arg) => {
-//     console.log("install");
-//     autoUpdater.quitAndInstall();
-//   });
-
-ipc.handle("GET_DOWNLOAD_LINKS", async (event, data) => {
-  console.log(data, "GET_DOWNLOAD_LINKS");
-  let automation = new SeleniumAutomation("GET_DOWNLOAD_LINKS", data);
-  let links = await automation.get_download_links();
-  return JSON.stringify(links);
+// Auto update
+// when the update is ready, notify the BrowserWindow
+autoUpdater.on("update-downloaded", (info) => {
+  console.log("downloaded", info);
+  mainWindow.webContents.send("UPDATE_READY", info);
 });
 
+ipc.on("QUIT_AND_INSTALL", (event, arg) => {
+  console.log("install");
+  autoUpdater.quitAndInstall();
+});
+
+// =================================
+//   Manejo de eventos asincronos
+// =================================
+const sendLinkListGeneratorMessage = (type, payload) => {
+  mainWindow.webContents.send(
+    "LINK_LIST_GENERATOR_MESSAGE",
+    JSON.stringify({
+      type,
+      payload,
+    })
+  );
+};
+
+ipc.on("GET_DOWNLOAD_LINKS", (event, data) => {
+  sendLinkListGeneratorMessage("GENERATION_START", data);
+  let automation = new SeleniumAutomation();
+
+  automation
+    .get_download_links(
+      data,
+      (completedLink) => {
+        sendLinkListGeneratorMessage("GENERATION_LINK_FINISH", completedLink);
+      },
+      (failedLink) => {
+        sendLinkListGeneratorMessage("GENERATION_LINK_FAILED", failedLink);
+      },
+      (linkStarted) => {
+        sendLinkListGeneratorMessage("GENERATION_LINK_START", linkStarted);
+      }
+    )
+    .then((links) => {
+      sendLinkListGeneratorMessage("GENERATION_FINISH", links);
+    })
+    .catch((e) => console.log(e));
+});
+
+// =================================
+// Manejo de eventos sincronos
+// =================================
+ipc.on("MINIMIZE_WINDOW", (event, arg) => {
+  mainWindow.minimize();
+});
+ipc.on("CLOSE_WINDOW", (event, arg) => {
+  mainWindow.close();
+});
+ipc.on("EXECUTE_MIPONY", (event, arg) => {
+  runMiPony();
+});
+
+// =================================
 // Extensiones para desarrollo
+// =================================
 const addExtensions = () => {
   var extension_path = join(
     process.env.APPDATA.replace(process.env.APPDATA.split(path.sep).pop(), ""),
@@ -135,12 +184,17 @@ const addExtensions = () => {
       .filter(isDirectory);
 
   try {
-    BrowserWindow.addDevToolsExtension(
-      getDirectories(`${path.join(extension_path, react_dev_tools)}`)[0]
-    );
-    BrowserWindow.addDevToolsExtension(
-      getDirectories(`${path.join(extension_path, redux_dev_tools)}`)[0]
-    );
+    app.whenReady().then(async () => {
+      await session.defaultSession.loadExtension(
+        getDirectories(`${path.join(extension_path, react_dev_tools)}`)[0]
+      );
+    });
+
+    app.whenReady().then(async () => {
+      await session.defaultSession.loadExtension(
+        getDirectories(`${path.join(extension_path, redux_dev_tools)}`)[0]
+      );
+    });
   } catch {
     console.log("No extensions");
   }

@@ -1,0 +1,89 @@
+@import "../../sass/base.scss";
+.link-list-generator {
+  color: $lighterText;
+  h1 {
+    font-size: 1.1em;
+  }
+
+  .link-list {
+    textarea {
+      width: 100%;
+      margin: 1em auto 0.5em auto;
+      display: block;
+      padding: 0.5em;
+      font-family: Poppins;
+      background: $mainDark;
+      outline: none;
+      color: $lighterText;
+      resize: none;
+      height: 150px;
+      font-size: 0.7em;
+    }
+    small {
+      color: $mainText;
+      font-size: 0.7em;
+    }
+
+    .button--red {
+      margin-left: 1em;
+    }
+  }
+
+  .valid-link-list {
+    ul {
+      margin-top: 0.7em;
+      height: 150px;
+      overflow-y: scroll;
+      border: 1px solid grey;
+      padding: 0.5em;
+      margin-bottom: 0.5em;
+      li {
+        display: block;
+        font-size: 0.7em;
+        span {
+          margin-right: 0.5em;
+        }
+        a {
+          color: lighten($mainText, 20%);
+        }
+      }
+    }
+  }
+
+  .results-list {
+    &__results {
+      padding: 0.5em;
+      border: 1px solid grey;
+      font-size: 0.8em;
+      overflow: auto;
+      max-height: 160px;
+      margin-bottom: 0.5em;
+      user-select: text;
+    }
+
+    &__result:not(:last-child) {
+      margin-bottom: 1em;
+      border-bottom: 1px solid grey;
+      padding-bottom: 0.5em;
+    }
+
+    p.link {
+      margin-bottom: 0.5em;
+    }
+    .sublinks {
+      .button {
+        margin: 1em auto 0.5em auto;
+      }
+      a {
+        color: lighten($mainText, 5%);
+        font-size: 0.9em;
+        display: inline-block;
+        text-decoration: underline;
+
+        &:hover {
+          color: lighten($mainText, 10%);
+        }
+      }
+    }
+  }
+}
