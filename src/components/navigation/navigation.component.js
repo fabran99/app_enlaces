@@ -13,6 +13,10 @@ const LINK_DATA = [
     to: "/uploaad",
     content: "Subir contenido",
   },
+  {
+    to: "/test",
+    content: "Este boton no hace nada",
+  },
 ];
 
 const Navigation = (props) => {
