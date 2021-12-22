@@ -2,11 +2,14 @@ import { connect } from "react-redux";
 import React, { Component } from "react";
 import classnames from "classnames";
 import { toast } from "react-toastify";
+import {
+  selectGenerating,
+  selectGenerationCompletedData,
+} from "../../../redux/linkListGenerator/linkListGenerator.selectors";
 
 const ResultsList = (props) => {
-  const { linkListGenerator } = props;
-  const { generating, generationCompletedData } = linkListGenerator;
-  console.log(linkListGenerator);
+  const { generating, generationCompletedData } = props;
+  console.log(generating, generationCompletedData);
 
   const onCopy = () => {
     let all_links = [];
@@ -54,7 +57,11 @@ const ResultsList = (props) => {
             let isMovie = !!result.movie_link;
             return (
               <div className="results-list__result" key={result.link}>
-                <p className="link">{result.title}</p>
+                <p className="link">
+                  <a href={result.link} target="_blank">
+                    {result.title}
+                  </a>
+                </p>
                 <div className="sublinks">
                   {isMovie
                     ? result.movie_link.map((movieLink, index) => {
@@ -70,7 +77,7 @@ const ResultsList = (props) => {
                     : result.episode_links.map((episodeLink, index) => {
                         return (
                           <p key={index}>
-                            <a href={episodeLink.zs_link}>
+                            <a href={episodeLink.zs_link} target="_blank">
                               {episodeLink.episode} - {episodeLink.zs_link}
                             </a>
                           </p>
@@ -99,7 +106,8 @@ const ResultsList = (props) => {
 };
 
 const mapStateToProps = (state) => ({
-  linkListGenerator: state.linkListGenerator,
+  generating: selectGenerating(state),
+  generationCompletedData: selectGenerationCompletedData(state),
 });
 
 export default connect(mapStateToProps, null)(ResultsList);

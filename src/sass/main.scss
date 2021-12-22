@@ -56,11 +56,11 @@ body {
   -webkit-box-shadow: inset 0 0 6px transparent;
 }
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
   background-color: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   -webkit-box-shadow: inset 0 0 6px transparent;
-  background-color: lighten($secondaryDark, 15%);
+  background-color: lighten($secondaryDark, 25%);
 }

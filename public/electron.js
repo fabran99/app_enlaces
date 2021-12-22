@@ -1,6 +1,6 @@
 const electron = require("electron");
 const ipc = electron.ipcMain;
-const { app, session } = electron;
+const { app, session, Notification } = electron;
 const BrowserWindow = electron.BrowserWindow;
 const path = require("path");
 const join = path.join;
@@ -77,6 +77,11 @@ const createWindow = () => {
 
   // Cierro programa al cerrar ventana
   mainWindow.on("closed", () => (mainWindow = null));
+  // Los links se abren en una ventana aparte en un navegador
+  mainWindow.webContents.on("new-window", function (e, url) {
+    e.preventDefault();
+    electron.shell.openExternal(url);
+  });
 };
 
 // Se ejecuta cuando inicia la app
@@ -144,6 +149,11 @@ ipc.on("GET_DOWNLOAD_LINKS", (event, data) => {
     )
     .then((links) => {
       sendLinkListGeneratorMessage("GENERATION_FINISH", links);
+      let notification = new Notification({
+        title: "Links App",
+        body: "Se han generado los enlaces",
+      });
+      notification.show();
     })
     .catch((e) => console.log(e));
 });

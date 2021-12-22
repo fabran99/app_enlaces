@@ -69,6 +69,15 @@
 
     p.link {
       margin-bottom: 0.5em;
+      a {
+        color: $lighterText;
+        font-size: 1.2em;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
     .sublinks {
       .button {

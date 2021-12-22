@@ -4,6 +4,7 @@ var initialState = {
   maxConcurrentUpdates: 1,
   maxConcurrentDownloads: 1,
   maxConcurrentLinkGenerators: 1,
+  appUpdateAvailable: false,
 };
 
 export default (state = initialState, action) => {

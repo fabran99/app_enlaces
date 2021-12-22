@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 //actions
 import { initializeLinkListCommunication } from "../redux/linkListGenerator/linkListGenerator.actions";
 import { initializeUploadCommunication } from "../redux/uploadHandler/uploadHandler.actions";
-
+import { updateSettings } from "../redux/settings/settings.actions";
 import { electron } from "../nodeObjects/electron";
 
 export class AppWrapper extends Component {
@@ -21,6 +21,9 @@ export class AppWrapper extends Component {
     this.updateListener = electron.ipcRenderer.on(
       "UPDATE_READY",
       (event, data) => {
+        this.props.updateSettings({
+          appUpdateAvailable: true,
+        });
         this.showUpdateIsReady(data);
       }
     );
@@ -32,16 +35,27 @@ export class AppWrapper extends Component {
       return (
         <div className="update_notification">
           <div className="update_notification__text">
-            Version {version} disponible
+            Nueva version disponible
           </div>
           <div className="update_notification__button">
-            <button onClick={this.quitAndInstall.bind(this)}>Actualizar</button>
+            <button className="button" onClick={this.quitAndInstall.bind(this)}>
+              {/*font awesome icon for update button */}
+              <i className="fas fa-download" />
+              <span>Actualizar</span>
+            </button>
+            <button
+              className="button button--red"
+              onClick={() => toast.dismiss(this.toastUpdate)}
+            >
+              <i className="fas fa-times" />
+              <span>Ahora no</span>
+            </button>
           </div>
         </div>
       );
     };
     this.toastUpdate = toast(UpdateComponent, {
-      position: "bottom-left",
+      position: "bottom-right",
       autoClose: false,
       closeOnClick: false,
     });
@@ -60,6 +74,7 @@ export class AppWrapper extends Component {
 const mapdispatchToProps = {
   initializeLinkListCommunication,
   initializeUploadCommunication,
+  updateSettings,
 };
 
 export default connect(null, mapdispatchToProps)(AppWrapper);

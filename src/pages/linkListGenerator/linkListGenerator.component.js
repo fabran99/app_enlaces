@@ -4,17 +4,23 @@ import { electron } from "../../nodeObjects/electron";
 import { onLinkListChange } from "../../redux/linkListGenerator/linkListGenerator.actions";
 import classnames from "classnames";
 import ResultsList from "./subcomponents/resultsList";
+import {
+  selectGenerating,
+  selectLinkListText,
+} from "../../redux/linkListGenerator/linkListGenerator.selectors";
 import "./linkListGenerator.styles.scss";
 
 const LinkListGenerator = (props) => {
-  const { linkListGenerator } = props;
+  const { generating, linkListText } = props;
   const onChange = (e) => {
     const { value } = e.target;
-    props.onChange(value);
+    if (!generating) {
+      props.onChange(value);
+    }
   };
 
   const getLinks = () => {
-    let linkList = linkListGenerator.linkListText;
+    let linkList = linkListText;
     // Get all links in linkList by checking with a regex
     let links = linkList.match(
       /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g
@@ -55,10 +61,9 @@ const LinkListGenerator = (props) => {
   let validLinks = getLinks();
 
   const onSubmit = () => {
-    if (linkListGenerator.generating || !linkListGenerator.linkListText) {
-      return null;
+    if (!generating && linkListText && validLinks.length) {
+      electron.ipcRenderer.send("GET_DOWNLOAD_LINKS", validLinks);
     }
-    electron.ipcRenderer.send("GET_DOWNLOAD_LINKS", validLinks);
   };
 
   const onOpenMipony = () => {
@@ -72,7 +77,7 @@ const LinkListGenerator = (props) => {
           <div className="col-6">
             <h1>Buscar enlaces de descarga</h1>
             <textarea
-              value={linkListGenerator.linkListText}
+              value={linkListText}
               onChange={onChange}
               placeholder="Escribe aquí tu lista de links"
             ></textarea>
@@ -105,9 +110,7 @@ const LinkListGenerator = (props) => {
                 <button
                   className={classnames("button", {
                     "button--disabled":
-                      linkListGenerator.generating ||
-                      !linkListGenerator.linkListText.length ||
-                      !validLinks,
+                      generating || !linkListText.length || !validLinks.length,
                   })}
                   onClick={onSubmit}
                 >
@@ -130,7 +133,8 @@ const LinkListGenerator = (props) => {
 };
 
 const mapStateToProps = (state) => ({
-  linkListGenerator: state.linkListGenerator,
+  generating: selectGenerating(state),
+  linkListText: selectLinkListText(state),
 });
 
 const mapdispatchToProps = {
