@@ -6,6 +6,8 @@ import {
   selectGenerating,
   selectGenerationCompletedData,
 } from "../../../redux/linkListGenerator/linkListGenerator.selectors";
+import Button from "../../../components/general/button/button.component";
+import LinkGenerationProcess from "./linkGenerationProcess";
 
 const ResultsList = (props) => {
   const { generating, generationCompletedData } = props;
@@ -15,9 +17,13 @@ const ResultsList = (props) => {
     let all_links = [];
     generationCompletedData.forEach((link) => {
       if (!!link.movie_link) {
-        all_links = [...all_links, ...link.movie_link];
+        all_links = [...all_links, `${link.title}`, ...link.movie_link];
       } else {
-        all_links = [...all_links, ...link.episode_links.map((e) => e.zs_link)];
+        all_links = [
+          ...all_links,
+          `${link.title}`,
+          ...link.episode_links.map((e) => e.zs_link),
+        ];
       }
     });
     // Notify with a toast
@@ -34,9 +40,9 @@ const ResultsList = (props) => {
     let links = [];
     let link = generationCompletedData[index];
     if (!!link.movie_link) {
-      links = link.movie_link;
+      links = [`${link.title}`, ...link.movie_link];
     } else {
-      links = link.episode_links.map((e) => e.zs_link);
+      links = [`${link.title}`, ...link.episode_links.map((e) => e.zs_link)];
     }
     // Notify with a toast
     toast.info(`Links de: "${link.title}" copiados al portapapeles`, {
@@ -46,10 +52,11 @@ const ResultsList = (props) => {
     });
     navigator.clipboard.writeText(links.join("\n"));
   };
+  console.log(generating, generationCompletedData);
 
   return (
     <div className="results-list">
-      {generating ? <h1>Buscando enlaces...</h1> : <h1>Resultados</h1>}
+      {generating ? <LinkGenerationProcess /> : <h1>Resultados</h1>}
 
       {!generating && generationCompletedData && (
         <div className="results-list__results">
@@ -84,10 +91,11 @@ const ResultsList = (props) => {
                         );
                       })}
 
-                  <button className="button" onClick={() => onCopyElement(i)}>
-                    <i className="fas fa-copy"></i>
-                    <span>Copiar enlaces</span>
-                  </button>
+                  <Button
+                    onClick={() => onCopyElement(i)}
+                    text="Copiar enlaces"
+                    iconClass="fas fa-copy"
+                  />
                 </div>
               </div>
             );
@@ -96,10 +104,7 @@ const ResultsList = (props) => {
       )}
 
       {generationCompletedData && !generating && (
-        <button onClick={onCopy} className="button">
-          <i className="fas fa-copy"></i>
-          <span>Copiar todo</span>
-        </button>
+        <Button onClick={onCopy} text="Copiar todo" iconClass="fas fa-copy" />
       )}
     </div>
   );

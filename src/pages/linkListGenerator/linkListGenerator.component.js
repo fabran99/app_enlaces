@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { electron } from "../../nodeObjects/electron";
 import { onLinkListChange } from "../../redux/linkListGenerator/linkListGenerator.actions";
 import classnames from "classnames";
+import Button from "../../components/general/button/button.component";
 import ResultsList from "./subcomponents/resultsList";
 import {
   selectGenerating,
@@ -26,7 +27,7 @@ const LinkListGenerator = (props) => {
       /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g
     );
     if (!links) {
-      return null;
+      return [];
     }
 
     let valid_links = links.filter((link) => {
@@ -47,7 +48,7 @@ const LinkListGenerator = (props) => {
       }
     });
     if (!valid_links.length) {
-      return null;
+      return [];
     }
 
     // Remove duplicates
@@ -75,7 +76,7 @@ const LinkListGenerator = (props) => {
       <div className="link-list">
         <div className="row">
           <div className="col-6">
-            <h1>Buscar enlaces de descarga</h1>
+            <h1>Buscar links de descarga</h1>
             <textarea
               value={linkListText}
               onChange={onChange}
@@ -85,7 +86,7 @@ const LinkListGenerator = (props) => {
           </div>
           <div className="col-6">
             <div className="valid-link-list">
-              <h1>Enlaces válidos</h1>
+              <h1>Links válidos</h1>
               <ul>
                 {validLinks && validLinks.length ? (
                   validLinks.map((link, index) => {
@@ -103,25 +104,26 @@ const LinkListGenerator = (props) => {
                     );
                   })
                 ) : (
-                  <li>No hay enlaces válidos</li>
+                  <li>No hay links válidos</li>
                 )}
               </ul>
               <div className="link-list--info">
-                <button
-                  className={classnames("button", {
-                    "button--disabled":
-                      generating || !linkListText.length || !validLinks.length,
-                  })}
+                <Button
+                  text="Buscar"
                   onClick={onSubmit}
-                >
-                  {/* Search icon */}
-                  <i className="fas fa-search"></i>
-                  <span>Buscar</span>
-                </button>
-                <button className="button button--red" onClick={onOpenMipony}>
-                  <i className="fas fa-download"></i>
-                  <span>Abrir MiPony</span>
-                </button>
+                  extraClass={
+                    generating || !linkListText.length || !validLinks.length
+                      ? "disabled"
+                      : null
+                  }
+                  iconClass="fas fa-search"
+                />
+                <Button
+                  text="Abrir MiPony"
+                  onClick={onOpenMipony}
+                  iconClass="fas fa-download"
+                  extraClass="red"
+                />
               </div>
             </div>
           </div>

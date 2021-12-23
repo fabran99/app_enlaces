@@ -1,41 +1,5 @@
 $navbarHeight: 35px;
 
-.button {
-  outline: none;
-  font-family: Poppins;
-  padding: 0.1em 0.5em;
-  color: white;
-  border: none;
-  box-shadow: 0 0 6px 2px rgba(0, 0, 0, 0.185);
-  background: $mainButtonBackground;
-  border-radius: 2px;
-  color: $lighterText;
-  font-size: 0.7em;
-  user-select: none;
-  cursor: pointer;
-  padding-top: 0.2em;
-  svg {
-    margin-right: 0.5em;
-  }
-  &:hover {
-    background: darken($mainButtonBackground, 3%);
-  }
-
-  &--disabled,
-  &--disabled:hover {
-    background: lighten($middleDark, 15%);
-    // put normal cursor
-    cursor: default;
-  }
-
-  &--red {
-    background: $mainRed;
-    &:hover {
-      background: darken($mainRed, 3%);
-    }
-  }
-}
-
 .update_notification {
   &__button {
     margin-top: 0.5em;
@@ -44,4 +8,20 @@ $navbarHeight: 35px;
       margin-left: 0.5em;
     }
   }
+}
+
+h1 {
+  font-size: 1.1em;
+  color: white;
+}
+
+input {
+  display: inline-block;
+  padding: 0.5em;
+  font-family: Poppins;
+  background: $mainDark;
+  outline: none;
+  color: $lighterText;
+  font-size: 0.7em;
+  border: 1px solid grey;
 }

@@ -110,6 +110,11 @@ app.on("activate", () => {
 autoUpdater.on("update-downloaded", (info) => {
   console.log("downloaded", info);
   mainWindow.webContents.send("UPDATE_READY", info);
+  let notification = new Notification({
+    title: "Links App",
+    body: "Nueva version disponible",
+  });
+  notification.show();
 });
 
 ipc.on("QUIT_AND_INSTALL", (event, arg) => {

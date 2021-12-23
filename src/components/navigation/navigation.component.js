@@ -10,12 +10,8 @@ const LINK_DATA = [
     content: "Buscar links",
   },
   {
-    to: "/uploaad",
-    content: "Subir contenido",
-  },
-  {
-    to: "/test",
-    content: "Este boton no hace nada",
+    to: "/historical_links",
+    content: "Historial de links",
   },
 ];
 

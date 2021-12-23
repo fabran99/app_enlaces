@@ -1,9 +1,6 @@
 @import "../../sass/base.scss";
 .link-list-generator {
   color: $lighterText;
-  h1 {
-    font-size: 1.1em;
-  }
 
   .link-list {
     textarea {
@@ -53,10 +50,11 @@
   .results-list {
     &__results {
       padding: 0.5em;
+      margin-top: 0.5em;
       border: 1px solid grey;
       font-size: 0.8em;
       overflow: auto;
-      max-height: 160px;
+      height: 150px;
       margin-bottom: 0.5em;
       user-select: text;
     }
@@ -91,6 +89,99 @@
 
         &:hover {
           color: lighten($mainText, 10%);
+        }
+      }
+    }
+  }
+
+  .link-generation-process {
+    margin-top: 0.5em;
+    overflow: auto;
+    max-height: 200px;
+
+    h1 {
+      margin: 0.5em auto;
+      margin-bottom: 0;
+      a {
+        font-weight: lighter;
+        margin-left: 0.5em;
+        font-size: 0.6em;
+        display: inline-block;
+        max-width: 600px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transform: translateY(3px);
+      }
+    }
+
+    p {
+      font-size: 0.9em;
+
+      a {
+        margin-left: 0.5em;
+      }
+
+      &.checking {
+        font-size: 1em;
+      }
+    }
+
+    a {
+      color: $mainText;
+      font-size: 0.8em;
+
+      &:hover {
+        color: $lighterText;
+      }
+    }
+
+    .link-process-detail {
+      padding: 0.5em 0;
+
+      &__title {
+        position: relative;
+        &:hover {
+          cursor: pointer;
+
+          svg {
+            color: $lighterText;
+          }
+        }
+      }
+      svg {
+        position: absolute;
+        right: 1em;
+        top: 50%;
+        color: $mainText;
+        transform: translateY(-50%);
+      }
+
+      p {
+        color: $lighterText;
+      }
+      &:not(:last-child) {
+        border-bottom: 1px solid grey;
+      }
+
+      &__links {
+        display: none;
+        overflow: auto;
+        max-height: 120px;
+
+        &--visible {
+          display: block;
+        }
+
+        a {
+          font-size: 0.7em;
+
+          display: inline-block;
+          max-width: 680px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          transform: translateY(3px);
         }
       }
     }

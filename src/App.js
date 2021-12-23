@@ -12,6 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Pages
 import LinkListGenerator from "./pages/linkListGenerator/linkListGenerator.component";
+import HistoricalLinks from "./pages/historicalLinks/historicalLinks.component";
 // Components
 import Navigation from "./components/navigation/navigation.component";
 import AppWrapper from "./wrappers/appWrapper.component";
@@ -36,6 +37,11 @@ const App = () => {
                     exact
                     path="/"
                     render={(props) => <LinkListGenerator {...props} />}
+                  />
+                  <Route
+                    exact
+                    path="/historical_links"
+                    render={(props) => <HistoricalLinks {...props} />}
                   />
 
                   {/* UploadPage */}
